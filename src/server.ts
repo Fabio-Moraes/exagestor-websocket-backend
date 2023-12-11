@@ -7,21 +7,16 @@ import http from 'http';
 dotenv.config();
 
 const app = express();
-
-app.get("/", (req, res) => {
-  res.status(200).send({
-    success: true,
-    message: "welcome to the beginning of greatness",
-  });
-});
-
 const httpServer = http.createServer();
+
+app.get('/', (req, res) => {
+  res.send('<h1>Hello world</h1>');
+});
 
 const io = new Server(httpServer, {
   cors: {
     origin: (origin = '', callback) => {
-      // Verifique aqui se a origem é permitida
-      const allowedOrigins = ['https://exatelecom.vercel.app'];
+      const allowedOrigins = [process.env.FRONTEND_ORIGIN];
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
