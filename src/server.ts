@@ -1,17 +1,10 @@
 import dotenv from 'dotenv';
 import { Server, Socket } from "socket.io";
-import express from 'express';
-
 import http from 'http';
 
 dotenv.config();
 
-const app = express();
 const httpServer = http.createServer();
-
-app.get('/', (req, res) => {
-  res.send('<h1>Hello world</h1>');
-});
 
 const io = new Server(httpServer, {
   cors: {
@@ -25,7 +18,6 @@ const io = new Server(httpServer, {
     },
     methods: ['GET', 'POST'],
   },
-
 });
 
 io.on("connection", (socket: Socket) => {
