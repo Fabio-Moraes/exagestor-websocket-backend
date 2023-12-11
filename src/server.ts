@@ -1,12 +1,16 @@
 import dotenv from 'dotenv';
 import { Server, Socket } from "socket.io";
 
-import { createServer } from 'http';
+import http from 'http';
 
 dotenv.config();
 
 
-const httpServer = createServer();
+const httpServer = http.createServer((req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://seu-app-deployado.com');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+});
 
 const io = new Server(httpServer, {
   cors: {
