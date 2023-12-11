@@ -7,15 +7,16 @@ dotenv.config();
 
 
 const httpServer = http.createServer((req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://seu-app-deployado.com');
+/*   res.setHeader('Access-Control-Allow-Origin', 'https://seu-app-deployado.com');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); */
 });
 
 const io = new Server(httpServer, {
   cors: {
-    origin: 'https://exatelecom.vercel.app',
+    origin: ['https://exatelecom.vercel.app'],
     methods: ['GET', 'POST'],
+    credentials: true
   },
 });
 
