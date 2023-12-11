@@ -18,7 +18,7 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
   console.log("A user connected");
-  io.emit("ON_USERS", JSON.stringify({ users: 123 }));
+  io.emit("ON_USERS", { users: 123 });
   socket.on("disconnect", () => {
     console.log("A user disconnected");
   });
@@ -27,5 +27,6 @@ io.on("connection", (socket) => {
 const PORT = Number(process.env.PORT || 3002);
 
 server.listen(PORT, () => {
+  console.log(`Front-End origin ${process.env.FRONTEND_ORIGIN}`);
   console.log(`Server running at port ${PORT}`);
 });
