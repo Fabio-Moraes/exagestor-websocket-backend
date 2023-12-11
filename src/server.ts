@@ -13,6 +13,10 @@ const httpServer = http.createServer((req, res) => {
 });
 
 const io = new Server(httpServer, {
+  allowRequest: (req, callback) => {
+    const noOriginHeader = req.headers.origin === undefined;
+    callback(null, noOriginHeader);
+  },
   cors: {
     origin: ['https://exatelecom.vercel.app'],
     methods: ['GET', 'POST'],
