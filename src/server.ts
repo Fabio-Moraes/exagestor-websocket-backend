@@ -19,9 +19,18 @@ const httpServer = http.createServer();
 
 const io = new Server(httpServer, {
   cors: {
-    origin: 'https://exatelecom.vercel.app',
+    origin: (origin = '', callback) => {
+      // Verifique aqui se a origem é permitida
+      const allowedOrigins = ['https://exatelecom.vercel.app'];
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST'],
   },
+
 });
 
 io.on("connection", (socket: Socket) => {
