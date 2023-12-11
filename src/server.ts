@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import express from 'express';
 import { Server, Socket } from "socket.io";
 
 import { createServer } from 'http';
@@ -11,9 +10,8 @@ const httpServer = createServer();
 
 const io = new Server(httpServer, {
   cors: {
-    origin: String(process.env.FRONTEND_ORIGIN) || 'http://localhost:3000',
+    origin: 'https://exatelecom.vercel.app',
     methods: ['GET', 'POST'],
-    credentials: true
   },
 });
 
