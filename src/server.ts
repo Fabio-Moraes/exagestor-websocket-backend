@@ -18,7 +18,7 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
   console.log("A user connected");
-  io.emit("ON_USERS", { users: 123 });
+  io.emit("ON_USERS", JSON.stringify({ users: 123 }));
   socket.on("disconnect", () => {
     console.log("A user disconnected");
   });
