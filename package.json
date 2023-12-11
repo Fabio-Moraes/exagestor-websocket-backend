@@ -5,12 +5,11 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "tsx src/server.ts",
+    "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "build": "tsup src",
     "test": "vitest"
   },
-  "proxy": "http://localhost:3000",
   "devDependencies": {
     "@types/express": "^4.17.16",
     "@types/node": "^18.15.11",
