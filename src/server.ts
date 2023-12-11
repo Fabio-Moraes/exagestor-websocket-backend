@@ -11,7 +11,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_ORIGIN,
+    origin: String(process.env.FRONTEND_ORIGIN) || 'http://localhost:3000',
     methods: ['GET', 'POST'],
   },
 });
@@ -24,7 +24,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = Number(process.env.PORT || 3002);
+const PORT = Number(process.env.PORT);
 
 server.listen(PORT, () => {
   console.log(`Front-End origin ${process.env.FRONTEND_ORIGIN}`);
