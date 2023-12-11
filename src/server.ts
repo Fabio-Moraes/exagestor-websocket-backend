@@ -1,26 +1,26 @@
 import dotenv from 'dotenv';
 import { Server, Socket } from "socket.io";
+import express from 'express';
 
 import http from 'http';
 
 dotenv.config();
 
+const app = express();
 
-const httpServer = http.createServer((req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://exatelecom.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+app.get("/", (req, res) => {
+  res.status(200).send({
+    success: true,
+    message: "welcome to the beginning of greatness",
+  });
 });
 
+const httpServer = http.createServer();
+
 const io = new Server(httpServer, {
-  allowRequest: (req, callback) => {
-    const noOriginHeader = req.headers.origin === undefined;
-    callback(null, noOriginHeader);
-  },
   cors: {
-    origin: ['https://exatelecom.vercel.app'],
+    origin: 'https://exatelecom.vercel.app',
     methods: ['GET', 'POST'],
-    credentials: true
   },
 });
 
