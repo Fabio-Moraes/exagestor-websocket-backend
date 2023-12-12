@@ -8,7 +8,7 @@ const httpServer = http.createServer();
 
 const io = new Server(httpServer, {
   cors: {
-    origin: (origin = '', callback) => {
+    origin: (origin, callback) => {
       const allowedOrigins = [process.env.FRONTEND_ORIGIN];
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
@@ -31,6 +31,5 @@ io.on("connection", (socket: Socket) => {
 const PORT = Number(process.env.PORT);
 
 httpServer.listen(PORT, () => {
-  console.log(`Front-End origin ${process.env.FRONTEND_ORIGIN}`);
   console.log(`Server running at port ${PORT}`);
 });
