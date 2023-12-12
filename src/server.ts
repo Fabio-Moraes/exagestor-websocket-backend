@@ -6,21 +6,21 @@ dotenv.config();
 
 const httpServer = http.createServer();
 
+const allowedOrigins = [
+  process.env.FRONTEND_ORIGIN_BASEURL,
+  process.env.BACKEND_ORIGIN_BASEURL
+];
+
 const io = new Server(httpServer, {
   cors: {
-    origin:"*"
-    /* origin: (origin, callback) => {
-      const allowedOrigins = [
-        process.env.FRONTEND_ORIGIN_BASEURL,
-        process.env.BACKEND_ORIGIN_BASEURL
-      ];
-
+    origin: (origin, callback) => {
+      console.log('######', origin)
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
       }
-    } */,
+    },
     methods: ['GET', 'POST'],
   },
 });
