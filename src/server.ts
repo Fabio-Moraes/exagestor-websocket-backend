@@ -22,7 +22,6 @@ const io = new Server(httpServer, {
       }
     },
     methods: ['GET', 'POST'],
-    allowedHeaders: ['my-custom-header'],
     credentials: true
   },
 });
