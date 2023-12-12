@@ -9,7 +9,7 @@ const httpServer = http.createServer();
 const io = new Server(httpServer, {
   cors: {
     origin: (origin, callback) => {
-      const allowedOrigins = [process.env.FRONTEND_ORIGIN];
+      const allowedOrigins = [process.env.FRONTEND_ORIGIN, 'https://exatelecom-server.vercel.app'];
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
