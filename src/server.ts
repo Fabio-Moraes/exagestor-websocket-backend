@@ -1,8 +1,17 @@
 import dotenv from 'dotenv';
 import { Server, Socket } from "socket.io";
+import jwt, { TokenExpiredError } from 'jsonwebtoken';
 import http from 'http';
 
 dotenv.config();
+
+interface Decoded {
+  user: {
+    id: number;
+    name: string;
+    role: string;
+  };
+}
 
 const httpServer = http.createServer();
 
@@ -11,10 +20,11 @@ const allowedOrigins = [
   process.env.BACKEND_ORIGIN_BASEURL
 ];
 
+const JWT_SECRET_KEY = '202b5105-39a4-4fd9-9d9e-d17542d05994';
+
 const io = new Server(httpServer, {
   cors: {
     origin: (origin, callback) => {
-      console.log('######', origin)
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -24,13 +34,29 @@ const io = new Server(httpServer, {
     methods: ['GET', 'POST'],
     credentials: true
   },
-});
+}); 
 
 io.on("connection", (socket: Socket) => {
-  console.log("A user connected");
-  io.emit("ON_USERS", JSON.stringify({ users: 123 }));
-  socket.on("disconnect", () => {
-    console.log("A user disconnected");
+  const token = socket.handshake.auth.token as string;
+
+  jwt.verify(token, JWT_SECRET_KEY, async (error, decoded) => {
+    const { user: employee } = decoded as Decoded;
+    if (error) {
+      if (error instanceof TokenExpiredError) {
+        console.log('** verify token expired **')
+        return;
+      } else {
+        console.log('** verify token inválido **')
+        return;
+      }
+    }
+
+    console.log("A user connected");
+    io.emit("ON_USERS", JSON.stringify({ users: employee.name }));
+    
+    socket.on("disconnect", () => {
+      console.log("A user disconnected");
+    });
   });
 });
 
