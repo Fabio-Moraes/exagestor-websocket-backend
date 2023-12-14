@@ -34,13 +34,14 @@ const io = new Server(httpServer, {
     methods: ['GET', 'POST'],
     credentials: true
   },
-}); 
+});
 
 io.on("connection", (socket: Socket) => {
   const token = socket.handshake.auth.token as string;
 
   jwt.verify(token, JWT_SECRET_KEY, async (error, decoded) => {
     const { user: employee } = decoded as Decoded;
+
     if (error) {
       if (error instanceof TokenExpiredError) {
         console.log('** verify token expired **')
@@ -52,8 +53,15 @@ io.on("connection", (socket: Socket) => {
     }
 
     console.log("A user connected");
-    io.emit("ON_USERS", JSON.stringify({ users: employee.name }));
     
+    socket.on('RUNNING_UPDATE_TEC', (data) => {
+      const { employee_id } = JSON.parse(data)
+
+      io.emit(`RUNNING_UPDATE_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
+      io.emit('RUNNING_UPDATE_ADMIN', JSON.stringify({ employee_id: employee_id }));
+    });
+
+
     socket.on("disconnect", () => {
       console.log("A user disconnected");
     });
