@@ -61,7 +61,6 @@ io.on("connection", (socket: Socket) => {
       io.emit('RUNNING_UPDATE_ADMIN', JSON.stringify({ employee_id: employee_id }));
     });
 
-
     socket.on("disconnect", () => {
       console.log("A user disconnected");
     });
