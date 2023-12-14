@@ -54,7 +54,7 @@ io.on("connection", (socket: Socket) => {
 
     console.log("A user connected");
     
-    socket.on('RUNNING_UPDATE_TEC', (data) => {
+    socket.on('RUNNING_UPDATE', (data) => {
       const { employee_id } = JSON.parse(data)
 
       io.emit(`RUNNING_UPDATE_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
