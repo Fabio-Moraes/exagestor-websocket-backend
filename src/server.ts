@@ -43,8 +43,6 @@ io.on("connection", (socket: Socket) => {
   const token = socket.handshake.auth.token as string;
 
   jwt.verify(token, JWT_SECRET_KEY, async (error, decoded) => {
-    const { user: employee } = decoded as Decoded;
-
     if (error) {
       if (error instanceof TokenExpiredError) {
         console.log('** verify token expired **')
@@ -59,8 +57,7 @@ io.on("connection", (socket: Socket) => {
     
     socket.on('RUNNING_UPDATE', (data) => {
       const { employee_id } = JSON.parse(data)
-
-      console.log(`@@@@:${employee_id}`);
+      console.log(`RUNNING_UPDATE:${employee_id}`);
 
       io.emit(`RUNNING_UPDATE_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
       io.emit('RUNNING_UPDATE_ADMIN', JSON.stringify({ employee_id: employee_id }));
