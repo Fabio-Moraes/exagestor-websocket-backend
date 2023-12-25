@@ -33,7 +33,7 @@ const io = new Server(httpServer, {
     path: '/',
     secure: appEnv,
     httpOnly: true,
-    ...(appEnv && { sameSite: 'none' })
+    ...(appEnv && { sameSite: 'strict' })
   },
   maxHttpBufferSize: 1e8,
   transports: ['websocket'],
