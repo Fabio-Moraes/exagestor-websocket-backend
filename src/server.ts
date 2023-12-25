@@ -1,17 +1,10 @@
 import dotenv from 'dotenv';
-import { Server, Socket } from "socket.io";
+import { Server, Socket } from 'socket.io';
 import jwt, { TokenExpiredError } from 'jsonwebtoken';
 import http from 'http';
+import cookie from 'cookie';
 
 dotenv.config();
-
-interface Decoded {
-  user: {
-    id: number;
-    name: string;
-    role: string;
-  };
-}
 
 const httpServer = http.createServer();
 
@@ -20,6 +13,7 @@ const allowedOrigins = [
   process.env.BACKEND_ORIGIN_BASEURL
 ];
 
+const appEnv = process.env.APP_ENV === 'production';
 const JWT_SECRET_KEY = '202b5105-39a4-4fd9-9d9e-d17542d05994';
 
 const io = new Server(httpServer, {
@@ -34,15 +28,24 @@ const io = new Server(httpServer, {
     methods: ['GET', 'POST'],
     credentials: true
   },
+  cookie: {
+    name: 'auth_token',
+    path: '/',
+    secure: appEnv,
+    httpOnly: true,
+    ...(appEnv && { sameSite: 'none' })
+  },
   maxHttpBufferSize: 1e8,
   transports: ['websocket'],
   allowUpgrades: false,
 });
 
-io.on("connection", (socket: Socket) => {
-  const token = socket.handshake.auth.token as string;
+io.on('connection', (socket: Socket) => {
+  const cookies = cookie.parse(socket.handshake.headers.cookie || '');
 
-  jwt.verify(token, JWT_SECRET_KEY, async (error, decoded) => {
+  console.log('cookie http only: ', cookies)
+
+  jwt.verify(cookies.auth_token, JWT_SECRET_KEY, { algorithms: ['HS256'] }, async (error, decoded) => {
     if (error) {
       if (error instanceof TokenExpiredError) {
         console.log('** verify token expired **')
@@ -53,7 +56,7 @@ io.on("connection", (socket: Socket) => {
       }
     }
 
-    console.log("A user connected");
+    console.log('A user connected');
     
     socket.on('RUNNING_UPDATE', (data) => {
       const { employee_id } = JSON.parse(data)
@@ -63,8 +66,8 @@ io.on("connection", (socket: Socket) => {
       io.emit('RUNNING_UPDATE_ADMIN', JSON.stringify({ employee_id: employee_id }));
     });
 
-    socket.on("disconnect", () => {
-      console.log("A user disconnected");
+    socket.on('disconnect', () => {
+      console.log('A user disconnected');
     });
   });
 });
