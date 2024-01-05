@@ -27,14 +27,14 @@ const io = new Server(httpServer, {
     },
     methods: ['GET', 'POST'],
     credentials: true
-  },
+  },/* 
   cookie: {
     name: 'auth_token',
     path: '/',
     secure: appEnv,
     httpOnly: true,
     ...(appEnv && { sameSite: 'strict' })
-  },
+  }, */
   maxHttpBufferSize: 1e8,
   transports: ['websocket'],
   allowUpgrades: false,
@@ -60,6 +60,7 @@ io.on('connection', (socket: Socket) => {
     
     socket.on('RUNNING_UPDATE', (data) => {
       const { employee_id } = JSON.parse(data)
+      console.log('log-data',JSON.parse(data));
       console.log(`RUNNING_UPDATE:${employee_id}`);
 
       io.emit(`RUNNING_UPDATE_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
