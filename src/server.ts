@@ -27,14 +27,7 @@ const io = new Server(httpServer, {
     },
     methods: ['GET', 'POST'],
     credentials: true
-  },/* 
-  cookie: {
-    name: 'auth_token',
-    path: '/',
-    secure: appEnv,
-    httpOnly: true,
-    ...(appEnv && { sameSite: 'strict' })
-  }, */
+  },
   maxHttpBufferSize: 1e8,
   transports: ['websocket'],
   allowUpgrades: false,
