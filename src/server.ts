@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { Server, Socket } from 'socket.io';
-//import jwt, { TokenExpiredError } from 'jsonwebtoken';
 import http from 'http';
+//import jwt, { TokenExpiredError } from 'jsonwebtoken';
 //import cookie from 'cookie';
 
 dotenv.config();
@@ -32,72 +32,77 @@ const io = new Server(httpServer, {
 });
 
 interface ConnectedUsers {
-  [key: string]: {
-    id: number;
-    name: string;
-    online: boolean;
-    role: string;
-  }
+  userid: string;
+  socket_id: string;
+  username: string;
+  status: 'on' | 'off' | 'idle';
+  role: string;
 }
 
-let connectedUsers = {} as ConnectedUsers;
+const connectedUsers: ConnectedUsers[] = [];
 
 io.on('connection', (socket: Socket) => {
-  try {
-    //const cookies = cookie.parse(socket.handshake.headers.cookie || '');
-    //jwt.verify(cookies.auth_token, JWT_SECRET_KEY, { algorithms: ['HS256'] });
-    //console.log('Token: ', cookies.auth_token.length ? 'true' : 'false');
+  //const cookies = cookie.parse(socket.handshake.headers.cookie || '');
+  //jwt.verify(cookies.auth_token, JWT_SECRET_KEY, { algorithms: ['HS256'] });
+  //console.log('Token: ', cookies.auth_token.length ? 'true' : 'false');
+  
+  const { id: idSocket } = socket.handshake.query as { id: string; name: string; role: string; };
 
-    console.log('A user connected');
+  console.log('A user connected');
 
-    socket.on('INCLUDE_CONNECTED_USER', (data) => {
-      const { id, name, role } = JSON.parse(data);
-      connectedUsers[socket.id] = { online: true, id, name, role };
-      io.emit('SEND_CONNECTED_USER', JSON.stringify(connectedUsers));
-    });
+  socket.on('CONNECTED_USER', (data) => {
+    const userInRoom = connectedUsers.find(user => user.userid === data.id);
 
-    socket.on('FETCH_CONNECTED_USER', (data) => {
-      io.emit('SEND_CONNECTED_USER', JSON.stringify(connectedUsers));
-    });
+    if (userInRoom) {
+      userInRoom.socket_id = socket.id
+    } else {
+      connectedUsers.push({
+        userid: data.id,
+        username: data.name,
+        role: data.status,
+        status: 'on',
+        socket_id: socket.id
+      })
+    }
 
-    socket.on('RUNNING_REFRESH', (data) => {
-      const { employee_id } = JSON.parse(data);
-      io.emit(`RUNNING_REFRESH_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
-      io.emit('RUNNING_REFRESH_ADMIN', JSON.stringify({ employee_id: employee_id }));
-    });
+    console.log('Logs:', connectedUsers.length, '\n')
+    io.emit('SEND_CONNECTED_USER', connectedUsers);
+  });
 
-    socket.on('STOCK_REFRESH', (data) => {
-      const { employee_id } = JSON.parse(data);
-      io.emit(`STOCK_REFRESH_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
-      io.emit('STOCK_REFRESH_ALMOX', JSON.stringify({ employee_id: employee_id }));
-    });
+  socket.on('FETCH_CONNECTED_USER', (data) => {
+    io.emit('SEND_CONNECTED_USER', connectedUsers);
+  });
 
-    socket.on('FETCH_DISCONNECT_USER', (data) => {
-      const { id } = JSON.parse(data);
-      console.log('Desconectou', id)
-
-      for (const key of Object.keys(connectedUsers)) {
-        if (connectedUsers[key].id === Number(id)) {
-          delete connectedUsers[key];
-        }
+  socket.on('IDLE_USER', (data) => {
+    for (let i = 0; i < connectedUsers.length; i++) {
+      if (connectedUsers[i].userid === data.id) {
+        connectedUsers[i].status = data.idle ? 'idle' : 'on';
       }
+    }
+    io.emit('SEND_CONNECTED_USER', connectedUsers);
+  });
 
-      io.emit('SEND_CONNECTED_USER', JSON.stringify(connectedUsers));
-    })
+  socket.on('RUNNING_REFRESH', (data) => {
+    const { employee_id } = JSON.parse(data);
+    io.emit(`RUNNING_REFRESH_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
+    io.emit('RUNNING_REFRESH_ADMIN', JSON.stringify({ employee_id: employee_id }));
+  });
 
-    socket.on('disconnect', () => {
-      console.log('A user disconnected');
-      delete connectedUsers[socket.id];
-      io.emit('SEND_CONNECTED_USER', JSON.stringify(connectedUsers));
-    });
+  socket.on('STOCK_REFRESH', (data) => {
+    const { employee_id } = JSON.parse(data);
+    io.emit(`STOCK_REFRESH_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
+    io.emit('STOCK_REFRESH_ALMOX', JSON.stringify({ employee_id: employee_id }));
+  });
 
-  } catch (error) {
-    // if (error instanceof TokenExpiredError) {
-    //   console.log('Token expired');
-    // } else {
-    //   console.log('Invalid token');
-    // }
-  }
+  socket.on('disconnect', () => {
+    console.log('A user disconnected', '\n', 'ID:', idSocket, '\n');
+
+    const index = connectedUsers.findIndex(user => user.socket_id === socket.id);
+    if (index !== -1) {
+      connectedUsers.splice(index, 1);
+      io.emit('SEND_CONNECTED_USER', connectedUsers);
+    }
+  });
 });
 
 const PORT = Number(process.env.PORT);
