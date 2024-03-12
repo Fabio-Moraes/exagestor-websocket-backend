@@ -60,7 +60,7 @@ io.on('connection', (socket: Socket) => {
         userid: data.id,
         username: data.name,
         role: data.status,
-        status: 'on',
+        status: 'idle',
         socket_id: socket.id
       })
     }
@@ -79,6 +79,11 @@ io.on('connection', (socket: Socket) => {
         connectedUsers[i].status = data.idle ? 'idle' : 'on';
       }
     }
+    io.emit('SEND_CONNECTED_USER', connectedUsers);
+  });
+
+  socket.on('DISCONNECTED_USER', (data) => {
+    socket.disconnect();
     io.emit('SEND_CONNECTED_USER', connectedUsers);
   });
 
