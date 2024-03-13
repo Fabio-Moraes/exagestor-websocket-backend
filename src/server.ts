@@ -45,7 +45,7 @@ io.on('connection', (socket: Socket) => {
   //const cookies = cookie.parse(socket.handshake.headers.cookie || '');
   //jwt.verify(cookies.auth_token, JWT_SECRET_KEY, { algorithms: ['HS256'] });
   //console.log('Token: ', cookies.auth_token.length ? 'true' : 'false');
-  
+
   const { id: idSocket } = socket.handshake.query as { id: string; name: string; role: string; };
 
   console.log('A user connected');
@@ -93,10 +93,15 @@ io.on('connection', (socket: Socket) => {
     io.emit('RUNNING_REFRESH_ADMIN', JSON.stringify({ employee_id: employee_id }));
   });
 
-  socket.on('STOCK_REFRESH', (data) => {
+  socket.on('RUNNING_REFRESH', (data) => {
     const { employee_id } = JSON.parse(data);
-    io.emit(`STOCK_REFRESH_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
-    io.emit('STOCK_REFRESH_ALMOX', JSON.stringify({ employee_id: employee_id }));
+    io.emit(`RUNNING_REFRESH_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
+    io.emit('RUNNING_REFRESH_ADMIN', JSON.stringify({ employee_id: employee_id }));
+  });
+
+  socket.on('LOGOUT_USER', (data) => {
+    const { employee_id } = JSON.parse(data);
+    io.emit(`LOGOUT_USER:${employee_id}`);
   });
 
   socket.on('disconnect', () => {
@@ -111,6 +116,7 @@ io.on('connection', (socket: Socket) => {
 });
 
 const PORT = Number(process.env.PORT);
+
 
 httpServer.listen(PORT, () => {
   console.log(`Server running at port ${PORT}`);
