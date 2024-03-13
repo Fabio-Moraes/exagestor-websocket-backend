@@ -35,7 +35,7 @@ interface ConnectedUsers {
   userid: string;
   socket_id: string;
   username: string;
-  status: 'on' | 'off' | 'idle';
+  status: 'online' | 'hidden';
   role: string;
 }
 
@@ -59,8 +59,8 @@ io.on('connection', (socket: Socket) => {
       connectedUsers.push({
         userid: data.id,
         username: data.name,
-        role: data.status,
-        status: 'idle',
+        role: data.role,
+        status: data.status,
         socket_id: socket.id
       })
     }
@@ -73,10 +73,10 @@ io.on('connection', (socket: Socket) => {
     io.emit('SEND_CONNECTED_USER', connectedUsers);
   });
 
-  socket.on('IDLE_USER', (data) => {
+  socket.on('HIDDEN_USER', (data) => {
     for (let i = 0; i < connectedUsers.length; i++) {
       if (connectedUsers[i].userid === data.id) {
-        connectedUsers[i].status = data.idle ? 'idle' : 'on';
+        connectedUsers[i].status = data.hidden ? 'hidden' : 'online';
       }
     }
     io.emit('SEND_CONNECTED_USER', connectedUsers);
