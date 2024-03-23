@@ -42,9 +42,11 @@ interface ConnectedUsers {
 const connectedUsers: ConnectedUsers[] = [];
 
 io.on('connection', (socket: Socket) => {
+  //////////////////////////////////////////////////////////////////////////////////
   //const cookies = cookie.parse(socket.handshake.headers.cookie || '');
   //jwt.verify(cookies.auth_token, JWT_SECRET_KEY, { algorithms: ['HS256'] });
   //console.log('Token: ', cookies.auth_token.length ? 'true' : 'false');
+  //////////////////////////////////////////////////////////////////////////////////
 
   const { id: idSocket } = socket.handshake.query as { id: string; name: string; role: string; };
 
@@ -117,9 +119,6 @@ io.on('connection', (socket: Socket) => {
 
 const PORT = Number(process.env.PORT);
 
-
 httpServer.listen(PORT, () => {
   console.log(`Server running at port ${PORT}`);
 });
-
-//
