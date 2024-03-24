@@ -42,22 +42,18 @@ interface ConnectedUsers {
 const connectedUsers: ConnectedUsers[] = [];
 
 io.on('connection', (socket: Socket) => {
-  //////////////////////////////////////////////////////////////////////////////////
   //const cookies = cookie.parse(socket.handshake.headers.cookie || '');
   //jwt.verify(cookies.auth_token, JWT_SECRET_KEY, { algorithms: ['HS256'] });
   //console.log('Token: ', cookies.auth_token.length ? 'true' : 'false');
-  //////////////////////////////////////////////////////////////////////////////////
 
   const { id: idSocket } = socket.handshake.query as { id: string; name: string; role: string; };
 
-  console.log('A user connected');
+  console.log('A user connected: ', socket.id);
 
-  socket.on('CONNECTED_USER', (data) => {
+  socket.on('CONNECTED_USER' /* FRONT-END | BACK-END */, (data) => {
     const userInRoom = connectedUsers.find(user => user.userid === data.id);
 
-    if (userInRoom) {
-      userInRoom.socket_id = socket.id
-    } else {
+    const addConnectedUser = () => {
       connectedUsers.push({
         userid: data.id,
         username: data.name,
@@ -67,43 +63,47 @@ io.on('connection', (socket: Socket) => {
       })
     }
 
-    console.log('Logs:', connectedUsers.length, '\n')
-    io.emit('SEND_CONNECTED_USER', connectedUsers);
+    if (userInRoom) {
+      for (const user of connectedUsers) {
+        if (user.userid === data.id && user.socket_id !== socket.id) {
+          io.to(user.socket_id).emit(`LOGOUT_USER:${user.userid}`); //FRONT-END
+        }
+      }
+
+      const socketInRoom = connectedUsers.find(user => user.socket_id === data.id);
+      if (!socketInRoom) { addConnectedUser() };
+    } else {
+      addConnectedUser();
+    }
+
+    console.log('LOGS:', connectedUsers.length)
+    io.emit('SEND_CONNECTED_USER', connectedUsers); //FRONT-END
   });
 
-  socket.on('FETCH_CONNECTED_USER', (data) => {
-    io.emit('SEND_CONNECTED_USER', connectedUsers);
-  });
-
-  socket.on('HIDDEN_USER', (data) => {
+  socket.on('HIDDEN_USER' /* FRONT-END */, (data) => {
     for (let i = 0; i < connectedUsers.length; i++) {
       if (connectedUsers[i].userid === data.id) {
         connectedUsers[i].status = data.hidden ? 'hidden' : 'online';
       }
     }
-    io.emit('SEND_CONNECTED_USER', connectedUsers);
+    io.emit('SEND_CONNECTED_USER', connectedUsers); //FRONT-END
   });
 
-  socket.on('DISCONNECTED_USER', (data) => {
+  socket.on('DISCONNECTED_USER' /* FRONT-END */, (data) => {
+    //socket.disconnect();
+    io.emit('SEND_CONNECTED_USER', connectedUsers); //FRONT-END
+  });
+
+  socket.on('RUNNING_REFRESH' /* BACK-END */, (data) => {
+    const { employee_id } = JSON.parse(data);
+    io.emit(`RUNNING_REFRESH_TEC:${employee_id}`); //FRONT-END
+    io.emit('RUNNING_REFRESH_ADMIN'); //FRONT-END
     socket.disconnect();
-    io.emit('SEND_CONNECTED_USER', connectedUsers);
   });
 
-  socket.on('RUNNING_REFRESH', (data) => {
+  socket.on('LOGOUT_USER' /* FRONT-END */, (data) => {
     const { employee_id } = JSON.parse(data);
-    io.emit(`RUNNING_REFRESH_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
-    io.emit('RUNNING_REFRESH_ADMIN', JSON.stringify({ employee_id: employee_id }));
-  });
-
-  socket.on('RUNNING_REFRESH', (data) => {
-    const { employee_id } = JSON.parse(data);
-    io.emit(`RUNNING_REFRESH_TEC:${employee_id}`, JSON.stringify({ employee_id: employee_id }));
-    io.emit('RUNNING_REFRESH_ADMIN', JSON.stringify({ employee_id: employee_id }));
-  });
-
-  socket.on('LOGOUT_USER', (data) => {
-    const { employee_id } = JSON.parse(data);
-    io.emit(`LOGOUT_USER:${employee_id}`);
+    io.emit(`LOGOUT_USER:${employee_id}`); //FRONT-END
   });
 
   socket.on('disconnect', () => {
