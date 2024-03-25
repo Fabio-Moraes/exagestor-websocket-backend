@@ -48,12 +48,8 @@ io.on('connection', (socket: Socket) => {
 
   const { id: idSocket } = socket.handshake.query as { id: string; name: string; role: string; };
 
-  console.log('A user connected: ', socket.id);
-
   socket.on('CONNECTED_USER' /* FRONT-END | BACK-END */, (data) => {
-    const userInRoom = connectedUsers.find(user => user.userid === data.id);
-
-    const addConnectedUser = () => {
+    const addUser = () => {
       connectedUsers.push({
         userid: data.id,
         username: data.name,
@@ -63,21 +59,26 @@ io.on('connection', (socket: Socket) => {
       })
     }
 
-    if (userInRoom) {
+    const existingUserId = connectedUsers.find(user => user.userid === data.id);
+
+    if (existingUserId) {
       for (const user of connectedUsers) {
         if (user.userid === data.id && user.socket_id !== socket.id) {
+          const index = connectedUsers.findIndex(user => user.socket_id === socket.id);
+          if (index !== -1) { connectedUsers.splice(index, 1); }
+
           io.to(user.socket_id).emit(`LOGOUT_USER:${user.userid}`); //FRONT-END
         }
       }
 
-      const socketInRoom = connectedUsers.find(user => user.socket_id === data.id);
-      if (!socketInRoom) { addConnectedUser() };
+      const existingSocketId = connectedUsers.find(user => user.socket_id === data.id);
+      if (!existingSocketId) addUser();
     } else {
-      addConnectedUser();
+      addUser();
     }
 
-    console.log('LOGS:', connectedUsers.length)
     io.emit('SEND_CONNECTED_USER', connectedUsers); //FRONT-END
+    console.log('A user connected: ', connectedUsers, '\n');
   });
 
   socket.on('HIDDEN_USER' /* FRONT-END */, (data) => {
@@ -90,7 +91,7 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('DISCONNECTED_USER' /* FRONT-END */, (data) => {
-    //socket.disconnect();
+    socket.disconnect();
     io.emit('SEND_CONNECTED_USER', connectedUsers); //FRONT-END
   });
 
@@ -107,7 +108,7 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('A user disconnected', '\n', 'ID:', idSocket, '\n');
+    console.log('A user disconnected id:', idSocket, '\n');
 
     const index = connectedUsers.findIndex(user => user.socket_id === socket.id);
     if (index !== -1) {
