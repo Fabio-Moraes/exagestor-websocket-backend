@@ -3,11 +3,11 @@ import { Server, Socket } from 'socket.io';
 import http from 'http';
 //import jwt, { TokenExpiredError } from 'jsonwebtoken';
 //import cookie from 'cookie';
+//const JWT_SECRET_KEY = '202b5105-39a4-4fd9-9d9e-d17542d05994';
 
 dotenv.config();
 
 const httpServer = http.createServer();
-//const JWT_SECRET_KEY = '202b5105-39a4-4fd9-9d9e-d17542d05994';
 
 const allowedOrigins = [
   process.env.FRONTEND_ORIGIN_BASEURL,
@@ -45,8 +45,12 @@ io.on('connection', (socket: Socket) => {
   //const cookies = cookie.parse(socket.handshake.headers.cookie || '');
   //jwt.verify(cookies.auth_token, JWT_SECRET_KEY, { algorithms: ['HS256'] });
   //console.log('Token: ', cookies.auth_token.length ? 'true' : 'false');
+  //const { id: idSocket } = socket.handshake.query as { id: string; name: string; role: string; };
 
-  const { id: idSocket } = socket.handshake.query as { id: string; name: string; role: string; };
+  const removeUser = () => {
+    const index = connectedUsers.findIndex(user => user.socket_id === socket.id);
+    if (index !== -1) { connectedUsers.splice(index, 1) }
+  }
 
   socket.on('CONNECTED_USER' /* FRONT-END | BACK-END */, (data) => {
     const addUser = () => {
@@ -64,9 +68,7 @@ io.on('connection', (socket: Socket) => {
     if (existingUserId) {
       for (const user of connectedUsers) {
         if (user.userid === data.id && user.socket_id !== socket.id) {
-          const index = connectedUsers.findIndex(user => user.socket_id === socket.id);
-          if (index !== -1) { connectedUsers.splice(index, 1); }
-
+          removeUser();
           io.to(user.socket_id).emit(`LOGOUT_USER:${user.userid}`); //FRONT-END
         }
       }
@@ -108,13 +110,8 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('A user disconnected id:', idSocket, '\n');
-
-    const index = connectedUsers.findIndex(user => user.socket_id === socket.id);
-    if (index !== -1) {
-      connectedUsers.splice(index, 1);
-      io.emit('SEND_CONNECTED_USER', connectedUsers);
-    }
+    removeUser();
+    io.emit('SEND_CONNECTED_USER', connectedUsers); //FRONT-END
   });
 });
 
