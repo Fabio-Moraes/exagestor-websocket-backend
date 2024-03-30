@@ -20,9 +20,13 @@ export default function handleConnectedUserEvent(socket: Socket) {
                 status: data.hidden ? 'hidden' : 'online',
                 socket_id: socket.id
             })
-            io.emit('SEND_CONNECTED_USER', connectedUsers);
             console.log('A user connected: ', connectedUsers, '\n');
+            io.emit('ALL_CONNECTED_USER', connectedUsers);
         }
+    });
+
+    socket.on('GET_CONNECTED_USER', (data) => {
+        io.emit('ALL_CONNECTED_USER', connectedUsers);
     });
 
     socket.on('SESSION_CONFLICT_DISCONNECT', (data) => {
@@ -44,7 +48,7 @@ export default function handleConnectedUserEvent(socket: Socket) {
                 status: data.hidden ? 'hidden' : 'online',
                 socket_id: socket.id
             })
-            io.emit('SEND_CONNECTED_USER', connectedUsers);
+            io.emit('ALL_CONNECTED_USER', connectedUsers);
             console.log('A user connected: ', connectedUsers, '\n');
         }
     });
@@ -58,6 +62,6 @@ export default function handleConnectedUserEvent(socket: Socket) {
     socket.on('disconnect', () => {
         console.log(`${socket.id} - desconectou`)
         removeUser();
-        io.emit('SEND_CONNECTED_USER', connectedUsers); //FRONT-END
+        io.emit('ALL_CONNECTED_USER', connectedUsers); //FRONT-END
     });
 }
