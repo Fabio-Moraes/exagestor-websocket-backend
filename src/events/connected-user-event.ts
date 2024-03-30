@@ -17,7 +17,7 @@ export default function handleConnectedUserEvent(socket: Socket) {
                 userid: data.id,
                 username: data.name,
                 role: data.role,
-                status: data.status,
+                status: data.hidden ? 'hidden' : 'online',
                 socket_id: socket.id
             })
             io.emit('SEND_CONNECTED_USER', connectedUsers);
@@ -41,7 +41,7 @@ export default function handleConnectedUserEvent(socket: Socket) {
                 userid: data.id,
                 username: data.name,
                 role: data.role,
-                status: data.status,
+                status: data.hidden ? 'hidden' : 'online',
                 socket_id: socket.id
             })
             io.emit('SEND_CONNECTED_USER', connectedUsers);
