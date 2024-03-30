@@ -25,11 +25,11 @@ export default function handleConnectedUserEvent(socket: Socket) {
         }
     });
 
-    socket.on('SESSION_CONFLICT_REMOVE', (data) => {
-        console.log(data)
+    socket.on('SESSION_CONFLICT_DISCONNECT', (data) => {
+        const jsonObj = JSON.stringify({ role: 'myself' })
         for (const user of connectedUsers) {
             if (user.userid === data.id && user.socket_id !== socket.id) {
-                io.to(user.socket_id).emit(`LOGOUT_USER:${user.userid}`);
+                io.to(user.socket_id).emit(`REMOTE_LOGOUT_USER:${user.userid}`, jsonObj);
                 removeUser();
             }
         }
@@ -49,17 +49,14 @@ export default function handleConnectedUserEvent(socket: Socket) {
         }
     });
 
-    socket.on('LOGOUT_USER' , (data) => {
+    socket.on('REMOTE_LOGOUT_USER', (data) => {
         const { employee_id } = JSON.parse(data);
-        io.emit(`LOGOUT_USER:${employee_id}`);
-    });
-
-    socket.on('DISCONNECTED_USER', (data) => {
-        socket.disconnect();
-        io.emit('SEND_CONNECTED_USER', connectedUsers);
+        const jsonObj = JSON.stringify({ role: 'admin' })
+        io.emit(`REMOTE_LOGOUT_USER:${employee_id}`, jsonObj);
     });
 
     socket.on('disconnect', () => {
+        console.log(`${socket.id} - desconectou`)
         removeUser();
         io.emit('SEND_CONNECTED_USER', connectedUsers); //FRONT-END
     });
