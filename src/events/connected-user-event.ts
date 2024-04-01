@@ -11,7 +11,7 @@ export default function handleConnectedUserEvent(socket: Socket) {
         const existingUserId = connectedUsers.find(user => user.userid === data.id);
 
         if (existingUserId) {
-            io.to(socket.id).emit('SESSION_CONFLICT_DETECTED')//FRONT-END
+            io.to(socket.id).emit('SESSION_CONFLICT_DETECTED')
         } else {
             connectedUsers.push({
                 userid: data.id,
@@ -62,6 +62,6 @@ export default function handleConnectedUserEvent(socket: Socket) {
     socket.on('disconnect', () => {
         console.log(`${socket.id} - desconectou`)
         removeUser();
-        io.emit('ALL_CONNECTED_USER', connectedUsers); //FRONT-END
+        io.emit('ALL_CONNECTED_USER', connectedUsers);
     });
 }
