@@ -17,7 +17,9 @@ import handleRunningRefreshEvent from './events/running-refresh-event';
 
 dotenv.config();
 
-const httpServer = http.createServer();
+const httpServer = http.createServer((request, response) => {
+  response.end(`handled by pid: ${process.pid}`)
+});
 
 const allowedOrigins = [
   process.env.FRONTEND_ORIGIN_BASEURL,
@@ -60,5 +62,5 @@ io.on('connection', (socket: Socket) => {
 const PORT = Number(process.env.PORT);
 
 httpServer.listen(PORT, () => {
-  console.log(`Server running at port ${PORT}`);
+  console.log(`Server running at port: ${PORT} | pid: ${process.pid} \n`);
 });
