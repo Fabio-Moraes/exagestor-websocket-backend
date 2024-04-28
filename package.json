@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "dev:ip": "yarn exec ./scripts/ip-swapper-env && tsx watch src/server.ts",
     "build": "tsup src",
     "start": "node dist/server.js",
     "test:autocannon": "npx autocannon -c 500 -d 30 localhost:3002",

@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Definir o arquivo de entrada
+input_file=".env"
+network_interface="enp1s0"
+
+# Função para extrair o IP de uma URL
+extrair_ip() {
+    # Extrair apenas o IP
+    ip=$(echo "$1" | sed -r 's/^.*:\/\/([^:]+):([0-9]+)$/\1/')
+    echo "$ip"
+}
+
+# Extrair IPs de cada variável do arquivo .env.local
+ip_frontend=$(extrair_ip $(grep -Po 'FRONTEND_ORIGIN_BASEURL=http://([^:]+):([0-9]+)' "$input_file" | cut -d= -f 2))
+
+ip_backend=$(extrair_ip $(grep -Po 'BACKEND_ORIGIN_BASEURL=http://([^:]+):([0-9]+)' "$input_file" | cut -d= -f 2))
+
+# Prompt para escolher entre o IP predefinido e o IP da placa de rede
+echo "Escolha uma opção para o novo endereço IP:"
+echo "1. Utilizar o localhost"
+echo "2. Utilizar um IP predefinido"
+echo "3. Utilizar o IP da placa de rede ($network_interface)"
+
+read -p "Opção: " option
+
+case $option in
+    1)
+        # Usar o localhost
+        new_ip="localhost"
+        ;;
+    2)
+        # Usar o IP predefinido
+        read -p "Digite o novo endereço IP predefinido: " new_ip
+        ;;
+    3)
+        # Usar o IP da placa de rede enp1s0
+        new_ip=$(ip addr show $network_interface | awk '/inet / {print $2}' | cut -d "/" -f1)
+        ;;
+    *)
+        echo "Opção inválida. Saindo."
+        exit 1
+        ;;
+esac
+
+# Substituir os endereços IP antigos pelo novo no arquivo .env
+sed -i "s/$ip_frontend/$new_ip/g" "$input_file"; 
+sed -i "s/$ip_backend/$new_ip/g" "$input_file"; 
+
+# Exibir os IPs
+echo "IP do frontend: $ip_frontend > $new_ip"
+echo "IP do backend: $ip_backend > $new_ip"
+
+# Exibir mensagem de sucesso
+echo "Endereços IP atualizados com sucesso!"

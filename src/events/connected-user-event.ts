@@ -10,8 +10,6 @@ export default function handleConnectedUserEvent(socket: Socket) {
     socket.on('CONNECTED_USER', (data) => {
         const existingUserId = connectedUsers.find(user => user.userid === data.id);
 
-        console.log('??', data)
-
         if(data.accountStatus === 'inactive') {
             const jsonObj = JSON.stringify({ role: 'admin' })
             io.emit(`REMOTE_LOGOUT_USER:${data.id}`, jsonObj);
@@ -27,8 +25,8 @@ export default function handleConnectedUserEvent(socket: Socket) {
                 status: data.hidden ? 'hidden' : 'online',
                 socket_id: socket.id
             })
-            console.log('A user connected: ', connectedUsers, '\n');
             io.emit('ALL_CONNECTED_USER', connectedUsers);
+            console.log('A user connected: ', connectedUsers, '\n');
         }
     });
 
