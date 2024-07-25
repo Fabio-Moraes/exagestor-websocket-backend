@@ -64,6 +64,11 @@ export default function handleConnectedUserEvent(socket: Socket) {
         io.emit(`REMOTE_LOGOUT_USER:${employee_id}`, jsonObj);
     });
 
+    socket.on('ALL_REMOTE_LOGOUT_USER', () => {
+        const jsonObj = JSON.stringify({ role: 'config' })
+        io.emit('ALL_REMOTE_LOGOUT_USER', jsonObj);
+    });
+
     socket.on('disconnect', () => {
         console.log(`${socket.id} - desconectou`)
         removeUser();
