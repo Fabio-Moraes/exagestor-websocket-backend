@@ -9,9 +9,9 @@ export default function handleRunningRefreshEvent(socket: Socket) {
     socket.disconnect();
   });
 
-  socket.on('RUNNING_REFRESH_CLASS_L', (data) => {
+  /* socket.on('RUNNING_REFRESH_CLASS_L', (data) => {
     const { protocol } = JSON.parse(data);
     io.emit(`RUNNING_REFRESH_CLASS_L:${protocol}`);
     socket.disconnect();
-  });
+  }); */
 }
