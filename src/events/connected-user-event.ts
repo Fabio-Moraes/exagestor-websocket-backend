@@ -69,9 +69,17 @@ export default function handleConnectedUserEvent(socket: Socket) {
         io.emit('ALL_REMOTE_LOGOUT_USER', jsonObj);
     });
 
+    socket.on('SERVER_SHUTDOWN', () => {
+        console.log(`${socket.id} - desconectou`)
+        removeUser();
+        io.emit('ALL_CONNECTED_USER', connectedUsers);
+        io.sockets.disconnectSockets(true);
+    });
+
     socket.on('disconnect', () => {
         console.log(`${socket.id} - desconectou`)
         removeUser();
         io.emit('ALL_CONNECTED_USER', connectedUsers);
+        io.sockets.disconnectSockets(true);
     });
 }
